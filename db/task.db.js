@@ -47,7 +47,7 @@ const checkUserPermission = async(userID, taskID) =>{
 
 const updateTaskDB = async (userID, taskID, completed) => {
 	const permission = await checkUserPermission(userID, taskID);
-	if(permission.err) return permission;
+	if(permission && permission.err) return permission;
 
 	try {
 		const getTask = await viewSpecificTaskDB(taskID);
@@ -71,7 +71,8 @@ const updateTaskDB = async (userID, taskID, completed) => {
 
 const deleteTaskDB = async (userID, taskID) => {
 	const permission = await checkUserPermission(userID, taskID);
-	if(permission.err){
+	console.log(permission)
+	if(permission && permission.err){
 		return permission;
 	}
 

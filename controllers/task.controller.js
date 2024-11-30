@@ -5,26 +5,32 @@ const {
 	deleteTaskDB,
 } = require("../db/task.db");
 const { StatusCodes } = require("http-status-codes");
-const { getUserDB } = require("../db/user.db");
 
 const createTask = async (req, res) => {
-	const email = req.user;
-	const checkUser = await getUserDB(email);
-	const userID = checkUser[0];
+	const { userID } = req.user;
 	const { title, description, deadline } = req.body;
 
-	if(!userID) return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({msg: "This user does not have an ID"})
 	if (!title || !description || !deadline) {
-		return res
-			.status(StatusCodes.BAD_REQUEST)
-			.json({ msg: "Enter the required fields" });
+		return res.status(StatusCodes.BAD_REQUEST).json({
+			success: false,
+			message: "Fields can not be empty",
+			error: "Title, description and deadline are required in order to create a task",
+		});
 	}
 
 	const task = await createTaskDB(userID, title, description, deadline);
-	if (task.err){
-		return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ msg: task.err });
+	if (task.err) {
+		return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+			success: false,
+			message: "An error has occured",
+			error: task.err,
+		});
 	}
-	res.status(StatusCodes.CREATED).json({ msg: task });
+	res.status(StatusCodes.CREATED).json({
+		success: true,
+		data: task,
+		message: "Task created",
+	});
 };
 
 const viewTask = async (req, res) => {
@@ -33,42 +39,52 @@ const viewTask = async (req, res) => {
 };
 
 const updateTask = async (req, res) => {
-	const email = req.user;
-	const checkUser = await getUserDB(email);
-	const userID = checkUser[0];
-
+	const { userID } = req.user;
 	const { id: taskID } = req.params;
 	const { completed } = req.body;
+
 	if (!taskID) {
-		return res
-			.status(StatusCodes.BAD_REQUEST)
-			.json({ msg: "Specify the ID of the task" });
+		return res.status(StatusCodes.BAD_REQUEST).json({
+			success: false,
+			message: "Task ID not specified",
+			error: "Task ID can not be empty",
+		});
 	}
+
 	if (!completed && completed != false) {
-		return res
-			.status(StatusCodes.BAD_REQUEST)
-			.json({
-				msg: "You can not leave required fields empty",
-				success: false,
-			});
+		return res.status(StatusCodes.BAD_REQUEST).json({
+			success: false,
+			message: "Fields can not be empty",
+			error: "Fields required to update the task can not be empty",
+		});
 	}
 	const task = await updateTaskDB(userID, taskID, completed);
-	res.status(StatusCodes.OK).json({ msg: task, success: true });
+	res.status(StatusCodes.OK).json({
+		success: true,
+		data: task,
+		message: "Task updated",
+		success: true,
+	});
 };
 
 const deleteTask = async (req, res) => {
-	const email = req.user;
-	const checkUser = await getUserDB(email);
-	const userID = checkUser[0];
+	const { userID } = req.user;
 
 	const { id: taskID } = req.params;
 	const task = await deleteTaskDB(userID, taskID);
 	if (task.err) {
-		return res
-			.status(StatusCodes.INTERNAL_SERVER_ERROR)
-			.json({ msg: task.err, success: false });
+		return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+			success: false,
+			message: "An error has occured",
+			error: task.err,
+		});
 	}
-	res.status(StatusCodes.OK).json({ msg: "Task deleted", success: true });
+	res.status(StatusCodes.OK).json({
+		success: true,
+		data: task,
+		message: "Task deleted",
+		success: true,
+	});
 };
 
 module.exports = {

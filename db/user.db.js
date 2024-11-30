@@ -15,10 +15,6 @@ const registerUserDB = async (email, password) => {
 	}
 };
 
-//We'll need one that will search for the user when they're login in
-
-// const loginUser
-
 const getUserDB = async (value, checkAgainst = "email") => {
 	const [row] = await pool.execute(
 		checkAgainst == "id"
@@ -26,9 +22,6 @@ const getUserDB = async (value, checkAgainst = "email") => {
 			: `SELECT * FROM users WHERE email = ?`,
 		[value],
 	);
-	// if (!row.length) {
-	// 	return { err: "User does not exist" };
-	// }
 	return row[0];
 };
 
