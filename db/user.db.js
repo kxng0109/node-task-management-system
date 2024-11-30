@@ -1,43 +1,55 @@
 const pool = require("./database");
+const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
+dotenv.config();
 
-const registerUser = async (email, password) => {
-	const [row, result] = await pool.execute(
-		"INSERT INTO users(email, password) VALUES(?, ?)",
-		[email, password],
-	);
-	return result;
+const registerUserDB = async (email, password) => {
+	try{
+		const [row, result] = await pool.execute(
+			"INSERT INTO users(email, password) VALUES(?, ?)",
+			[email, password],
+		);
+		return result;
+	}catch(err){
+		return {err};
+	}
 };
 
-const getUser = async(id) =>{
-	const [row, result] = await pool.execute(
-		`SELECT * FROM users
-		WHERE id=?
-		`,
-		[id]
-		);
-	if(!row.length){
-		return {err: "User does not exist"}
-	}
-	return [row, result]
-}
+//We'll need one that will search for the user when they're login in
 
+// const loginUser
 
-const deleteUser = async(role, id) =>{
-	if(role != 'admin') return {err: "You don't have the permission to perform this task"}
-	const checkUser = await getUser(id);
-	if(checkUser.err) return {err: checkUser.err};
+const getUserDB = async (value, checkAgainst = "email") => {
+	const [row] = await pool.execute(
+		checkAgainst == "id"
+			? `SELECT * FROM users WHERE id=?`
+			: `SELECT * FROM users WHERE email = ?`,
+		[value],
+	);
+	// if (!row.length) {
+	// 	return { err: "User does not exist" };
+	// }
+	return row[0];
+};
+
+const deleteUserDB = async (role, id) => {
+	if (role != "admin"){
+		return { err: "You don't have the permission to perform this task" };
+	};
+	const checkUser = await getUserDB(id);
+	if (checkUser.err) return { err: checkUser.err };
 
 	const [row, result] = await pool.execute(
 		`DELETE FROM users
 		WHERE id = ?
-		`, 
-		[id]
+		`,
+		[id],
 	);
-	return {row, result}
-}
-
+	return { row, result };
+};
 
 module.exports = {
-	registerUser,
-	deleteUser
-}
+	registerUserDB,
+	getUserDB,
+	deleteUserDB,
+};
