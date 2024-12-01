@@ -1,4 +1,4 @@
-const { registerUserDB, getUserDB } = require("../db/user.db");
+const { registerAdminDB, getUserDB } = require("../db/user.db");
 const { StatusCodes } = require("http-status-codes");
 const {
 	comparePassword,
@@ -6,7 +6,7 @@ const {
 	generateToken,
 } = require("../hashToken");
 
-const registerUser = async (req, res) => {
+const registerAdmin = async (req, res) => {
 	const { email, password } = req.body;
 	if (!email || !password) {
 		return res.status(StatusCodes.BAD_REQUEST).json({
@@ -15,7 +15,6 @@ const registerUser = async (req, res) => {
 			error: "No email or password was entered",
 		});
 	}
-	
 	let checkUser = await getUserDB(email);
 	if (checkUser) {
 		return res.status(StatusCodes.BAD_REQUEST).json({
@@ -25,19 +24,22 @@ const registerUser = async (req, res) => {
 		});
 	}
 
-	if(password.length < 8){
+	if (password.length < 8) {
 		return res.status(StatusCodes.BAD_REQUEST).json({
 			success: false,
 			message: "Password is too short",
-			error: "Password can not be less than 8 characters"
-		})
+			error: "Password can not be less than 8 characters",
+		});
 	}
 
-	await registerUserDB(email, hashPassword(password));
-	res.status(StatusCodes.CREATED).json({ msg: "User created" });
+	await registerAdminDB(email, hashPassword(password));
+	res.status(StatusCodes.CREATED).json({
+		success: true,
+		message: "Admin account created",
+	});
 };
 
-const loginUser = async (req, res) => {
+const loginAdmin = async (req, res) => {
 	const { email, password } = req.body;
 	if (!email || !password)
 		return res
@@ -62,10 +64,14 @@ const loginUser = async (req, res) => {
 	//Error dey o!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	let token = generateToken(email);
 	// console.log(req.headers.authorization)
-	res.status(StatusCodes.OK).json({ msg: `Welcome ${email}`, token });
+	res.status(StatusCodes.OK).json({
+		success: true,
+		message: `Login successful. Welcome ${email}`,
+		data: token,
+	});
 };
 
 module.exports = {
-	registerUser,
-	loginUser,
+	registerAdmin,
+	loginAdmin,
 };

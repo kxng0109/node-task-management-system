@@ -1,16 +1,6 @@
 const pool = require("./database");
 const { getUserDB } = require("./user.db");
 
-const createTaskDB = async (userID, title, description, deadline) => {
-	const [result] = await pool.execute(
-		`INSERT INTO tasks(user_id, title, description, deadline)
-		VALUES(?, ?, ?, ?)
-		`,
-		[userID, title, description, deadline],
-	);
-	return result;
-};
-
 const viewTasksDB = async () => {
 	const [row] = await pool.execute(`SELECT * FROM tasks`);
 	return row;
@@ -22,40 +12,60 @@ const viewSpecificTaskDB = async (id) => {
 			id,
 		]);
 		if (row.length) {
-			return row;
+			return row[0];
 		}
 		return { err: "Task not found" };
 	} catch (err) {
-		return err;
+		return {err};
 	}
 };
 
-const checkUserPermission = async(userID, taskID) =>{
+const createTaskDB = async (userID, title, description, deadline) => {
+	try{
+		const [result] = await pool.execute(
+			`INSERT INTO tasks(user_id, title, description, deadline)
+			VALUES(?, ?, ?, ?)
+			`,
+			[userID, title, description, deadline],
+		);
+
+		const createdTask = await viewSpecificTaskDB(result.insertId);
+		return createdTask;
+	} catch(err){
+		return {err};
+	}
+};
+
+//Check whether the user has permission to edit or delete the task
+//Admins will always have permission
+const checkUserPermission = async (userID, taskID) => {
+	//Find out if the task exists
 	const getTask = await viewSpecificTaskDB(taskID);
 	if (getTask.err) {
 		return getTask;
 	}
-	const userIDFromDB = await getTask[0][1];
 
+	const userIDFromTaskDB = await getTask[1];
 	const getUser = await getUserDB(userID, "id");
-	const userRole = await getUser[0][3];
+	const userRole = await getUser[3];
 
-	if(userIDFromDB != userID && userRole != "admin") {
-		return {err: "You do not have permission to modify this task"}
+	if (userIDFromTaskDB != userID && userRole != "admin") {
+		return { err: "You do not have permission to modify this task" };
 	}
-}
+};
 
 const updateTaskDB = async (userID, taskID, completed) => {
 	const permission = await checkUserPermission(userID, taskID);
-	if(permission && permission.err) return permission;
+	if (permission && permission.err) return permission;
 
 	try {
+		//To find out if that task exists
 		const getTask = await viewSpecificTaskDB(taskID);
 		if (getTask.err) {
 			return getTask;
 		}
 
-		const [row, results] = await pool.execute(
+		await pool.execute(
 			`
 		UPDATE tasks
 		SET completed = ?
@@ -63,34 +73,35 @@ const updateTaskDB = async (userID, taskID, completed) => {
 		`,
 			[completed, taskID],
 		);
-		return { row, results };
+
+		const updatedTask = await viewSpecificTaskDB(taskID);
+		return updatedTask;
 	} catch (err) {
-		return err;
+		return {err};
 	}
 };
 
 const deleteTaskDB = async (userID, taskID) => {
 	const permission = await checkUserPermission(userID, taskID);
-	console.log(permission)
-	if(permission && permission.err){
+	if (permission && permission.err) {
 		return permission;
 	}
 
 	try {
-		const getTask = await viewSpecificTaskDB(id);
+		const getTask = await viewSpecificTaskDB(taskID);
 		if (getTask.err) {
 			return getTask;
 		}
 
-		const [result] = await pool.execute(
+		await pool.execute(
 			`DELETE from tasks 
 			WHERE id = ?
 			`,
-			[id],
+			[taskID],
 		);
-		return [result];
+		return "Task deleted";
 	} catch (err) {
-		return err;
+		return {err};
 	}
 };
 

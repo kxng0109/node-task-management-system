@@ -7,6 +7,7 @@ const {
 const { StatusCodes } = require("http-status-codes");
 
 const createTask = async (req, res) => {
+	//User ID is set by the userid middleware
 	const { userID } = req.user;
 	const { title, description, deadline } = req.body;
 
@@ -39,6 +40,7 @@ const viewTask = async (req, res) => {
 };
 
 const updateTask = async (req, res) => {
+	//User ID is set by the userid middleware
 	const { userID } = req.user;
 	const { id: taskID } = req.params;
 	const { completed } = req.body;
@@ -59,6 +61,13 @@ const updateTask = async (req, res) => {
 		});
 	}
 	const task = await updateTaskDB(userID, taskID, completed);
+	if (task.err) {
+		return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+			success: false,
+			message: "An error occured",
+			error: task.err,
+		});
+	}
 	res.status(StatusCodes.OK).json({
 		success: true,
 		data: task,
@@ -68,9 +77,10 @@ const updateTask = async (req, res) => {
 };
 
 const deleteTask = async (req, res) => {
+	//User ID is set by the userid middleware
 	const { userID } = req.user;
-
 	const { id: taskID } = req.params;
+
 	const task = await deleteTaskDB(userID, taskID);
 	if (task.err) {
 		return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -79,11 +89,11 @@ const deleteTask = async (req, res) => {
 			error: task.err,
 		});
 	}
+
 	res.status(StatusCodes.OK).json({
 		success: true,
 		data: task,
 		message: "Task deleted",
-		success: true,
 	});
 };
 

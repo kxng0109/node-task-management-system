@@ -5,7 +5,7 @@ dotenv.config();
 
 const registerUserDB = async (email, password) => {
 	try{
-		const [row, result] = await pool.execute(
+		const [result] = await pool.execute(
 			"INSERT INTO users(email, password) VALUES(?, ?)",
 			[email, password],
 		);
@@ -14,6 +14,19 @@ const registerUserDB = async (email, password) => {
 		return {err};
 	}
 };
+
+//Let's try and set up some verification to ensure that any user can't just call this function
+const registerAdminDB = async(email, password) =>{
+	try{
+		const [result] = await pool.execute(
+			"INSERT INTO users(email, password, role) VALUES(?, ?, ?)",
+			[email, password, "admin"],
+		);
+		return result;
+	}catch(err){
+		return {err};
+	}
+}
 
 const getUserDB = async (value, checkAgainst = "email") => {
 	const [row] = await pool.execute(
@@ -43,6 +56,7 @@ const deleteUserDB = async (role, id) => {
 
 module.exports = {
 	registerUserDB,
+	registerAdminDB,
 	getUserDB,
 	deleteUserDB,
 };

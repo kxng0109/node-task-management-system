@@ -7,7 +7,7 @@ const {
 	deleteTask,
 } = require("../controllers/task.controller");
 const authenticateUser = require("../middleware/auth.middleware");
-const getUserIDMiddleware = require("../middleware/getuserid.middleware");
+const getUserIDMiddleware = require("../middleware/userid.middleware");
 
 router.route("/").get(authenticateUser, getUserIDMiddleware, viewTask).post(authenticateUser, getUserIDMiddleware, createTask);
 router.route("/:id").patch(authenticateUser, getUserIDMiddleware, updateTask).delete(authenticateUser, getUserIDMiddleware, deleteTask);

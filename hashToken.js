@@ -15,8 +15,8 @@ const comparePassword = (password, hash) =>{
 }
 
 //for jwt
-const generateToken = email => {
-	const token = jwt.sign({email}, process.env.JWT_SECRET, {
+const generateToken = (email, userType = 'user') => {
+	const token = jwt.sign({email, userType}, process.env.JWT_SECRET, {
 		expiresIn: process.env.JWT_EXPIRE
 	});
 	return token;
