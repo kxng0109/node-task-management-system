@@ -14,17 +14,15 @@ const authenticateUser = (req, res, next) => {
 	const token = authHeader.split(" ")[1];
 
 	try {
-		const { email } = decodeToken(token);
-		req.user = email;
+		const { email, userType } = decodeToken(token);
+		req.user = {email, userType};
 		next();
 	} catch (err) {
-		return res
-			.status(StatusCodes.FORBIDDEN)
-			.json({
-				success: false,
-				message: "Invalid token",
-				error: "Token is invalid, please login again",
-			});
+		return res.status(StatusCodes.FORBIDDEN).json({
+			success: false,
+			message: "Invalid token",
+			error: "Token is invalid, please login again",
+		});
 	}
 };
 

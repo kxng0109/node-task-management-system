@@ -1,5 +1,4 @@
 const pool = require("./database");
-const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -29,27 +28,36 @@ const registerAdminDB = async(email, password) =>{
 }
 
 const getUserDB = async (value, checkAgainst = "email") => {
-	const [row] = await pool.execute(
-		checkAgainst == "id"
-			? `SELECT * FROM users WHERE id=?`
-			: `SELECT * FROM users WHERE email = ?`,
-		[value],
-	);
-	return row[0];
+	try{
+		const [row] = await pool.execute(
+			checkAgainst == "id"
+				? `SELECT * FROM users WHERE id=?`
+				: `SELECT * FROM users WHERE email = ?`,
+			[value],
+		);
+		
+		if(row.length){
+			return row[0];
+		} else{
+			return {message: "Invalid user", err: "User not found"}
+		}
+	} catch(err){
+		return {err}
+	}
 };
 
-const deleteUserDB = async (role, id) => {
+const deleteUserDB = async (role, IDToBeRemoved) => {
 	if (role != "admin"){
-		return { err: "You don't have the permission to perform this task" };
+		return { message: "Permission denied", err: "You do not have the permission to perform this task" };
 	};
-	const checkUser = await getUserDB(id);
+	const checkUser = await getUserDB(IDToBeRemoved);
 	if (checkUser.err) return { err: checkUser.err };
 
 	const [row, result] = await pool.execute(
 		`DELETE FROM users
 		WHERE id = ?
 		`,
-		[id],
+		[IDToBeRemoved],
 	);
 	return { row, result };
 };

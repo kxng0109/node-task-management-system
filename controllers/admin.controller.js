@@ -1,4 +1,4 @@
-const { registerAdminDB, getUserDB } = require("../db/user.db");
+const { registerAdminDB, getUserDB, deleteUserDB } = require("../db/user.db");
 const { StatusCodes } = require("http-status-codes");
 const {
 	comparePassword,
@@ -62,7 +62,7 @@ const loginAdmin = async (req, res) => {
 	}
 
 	//Error dey o!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	let token = generateToken(email);
+	let token = generateToken({email, userType: "admin"});
 	// console.log(req.headers.authorization)
 	res.status(StatusCodes.OK).json({
 		success: true,
@@ -71,7 +71,48 @@ const loginAdmin = async (req, res) => {
 	});
 };
 
+const deleteUser = async (req, res) => {
+	const { userType } = req.user;
+	console.log(userType)
+	const { id: IDToBeRemoved } = req.params;
+	if (!userType || userType != "admin") {
+		return res.status(StatusCodes.FORBIDDEN).json({
+			success: false,
+			message: "Permission denied",
+			error: "User does not have the permission to perform this task",
+		});
+	}
+
+	if (!IDToBeRemoved) {
+		return res.status(StatusCodes.BAD_REQUEST).json({
+			success: false,
+			message: "No ID specified",
+			error: "ID not specified",
+		});
+	}
+
+	const removeUser = await deleteUserDB(userType, IDToBeRemoved);
+	if (removeUser.err) {
+		let statusCodeType;
+		if (task.message == "Invalid user") {
+			statusCodeType = StatusCodes.NOT_FOUND;
+		} else if (task.message == "Permission denied") {
+			statusCodeType = StatusCodes.FORBIDDEN;
+		} else {
+			statusCodeType = StatusCodes.INTERNAL_SERVER_ERROR;
+		}
+
+		return res.status(statusCodeType).json({
+			success: false,
+			message: task.message || task.err.message || "An error has occured",
+			error: task.err,
+		});
+	}
+	res.status(StatusCodes.NO_CONTENT).json({});
+};
+
 module.exports = {
 	registerAdmin,
 	loginAdmin,
+	deleteUser,
 };

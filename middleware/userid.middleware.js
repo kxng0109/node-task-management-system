@@ -2,7 +2,7 @@ const { getUserDB } = require("../db/user.db");
 const {StatusCodes} = require('http-status-codes');
 
 const getUserID = async (req, res, next) => {
-	const email = req.user;
+	const {email} = req.user;
 	const checkUser = await getUserDB(email);
 	const userID = checkUser[0];
 	if (!userID) {

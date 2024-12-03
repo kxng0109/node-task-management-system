@@ -1,27 +1,29 @@
 const pool = require("./database");
 const { getUserDB } = require("./user.db");
 
+// [taskID, userID, title, description, deadline, completed, created_at]
+
 const viewTasksDB = async () => {
 	const [row] = await pool.execute(`SELECT * FROM tasks`);
 	return row;
 };
 
-const viewSpecificTaskDB = async (id) => {
+const viewSpecificTaskDB = async (taskID) => {
 	try {
 		const [row] = await pool.execute(`SELECT * FROM tasks WHERE id = ?`, [
-			id,
+			taskID,
 		]);
 		if (row.length) {
 			return row[0];
 		}
-		return { err: "Task not found" };
+		return {message: "Invalid task", err: "Task not found" };
 	} catch (err) {
-		return {err};
+		return { err };
 	}
 };
 
 const createTaskDB = async (userID, title, description, deadline) => {
-	try{
+	try {
 		const [result] = await pool.execute(
 			`INSERT INTO tasks(user_id, title, description, deadline)
 			VALUES(?, ?, ?, ?)
@@ -31,8 +33,8 @@ const createTaskDB = async (userID, title, description, deadline) => {
 
 		const createdTask = await viewSpecificTaskDB(result.insertId);
 		return createdTask;
-	} catch(err){
-		return {err};
+	} catch (err) {
+		return { err };
 	}
 };
 
@@ -50,7 +52,10 @@ const checkUserPermission = async (userID, taskID) => {
 	const userRole = await getUser[3];
 
 	if (userIDFromTaskDB != userID && userRole != "admin") {
-		return { err: "You do not have permission to modify this task" };
+		return {
+			message: "Permission denied",
+			err: "You do not have permission to modify this task",
+		};
 	}
 };
 
@@ -77,7 +82,7 @@ const updateTaskDB = async (userID, taskID, completed) => {
 		const updatedTask = await viewSpecificTaskDB(taskID);
 		return updatedTask;
 	} catch (err) {
-		return {err};
+		return { err };
 	}
 };
 
@@ -101,7 +106,7 @@ const deleteTaskDB = async (userID, taskID) => {
 		);
 		return "Task deleted";
 	} catch (err) {
-		return {err};
+		return { err };
 	}
 };
 

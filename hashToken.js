@@ -23,8 +23,8 @@ const generateToken = (email, userType = 'user') => {
 }
 
 const decodeToken = (token) =>{
-	const isCorrect = jwt.verify(token, process.env.JWT_SECRET);
-	return isCorrect;
+	const decoded = jwt.verify(token, process.env.JWT_SECRET);
+	return decoded;
 }
 
 module.exports = {
