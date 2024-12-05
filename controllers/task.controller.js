@@ -5,6 +5,9 @@ const {
 	deleteTaskDB,
 } = require("../db/task.db");
 const { StatusCodes } = require("http-status-codes");
+const validator = require("validator");
+
+//validator.blacklist(input, '[^a-zA-Z0-9?!@.,:]') //If you want to really sanitize the inputs, then add this for each input
 
 const createTask = async (req, res) => {
 	//User ID is set by the userid middleware
@@ -37,6 +40,7 @@ const createTask = async (req, res) => {
 
 const viewTask = async (req, res) => {
 	const task = await viewTasksDB();
+	console.log(req.headers)
 	res.status(StatusCodes.OK).json({ msg: task });
 };
 
@@ -54,11 +58,21 @@ const updateTask = async (req, res) => {
 		});
 	}
 
+	let isBoolean = validator.isBoolean(completed.toString(), {loose: false});
+
 	if (!completed && completed != false) {
 		return res.status(StatusCodes.BAD_REQUEST).json({
 			success: false,
 			message: "Fields can not be empty",
 			error: "Fields required to update the task can not be empty",
+		});
+	}
+
+	if(!isBoolean){
+		return res.status(StatusCodes.BAD_REQUEST).json({
+			success: false,
+			message: "Value not accepted",
+			error: "Field only accepts true, false, '0' or '1'",
 		});
 	}
 

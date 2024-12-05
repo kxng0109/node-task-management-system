@@ -70,11 +70,11 @@ const loginUser = async (req, res) => {
 	}
 
 	let user = await getUserDB(email);
-	if (!user) {
+	if (!user || user.err) {
 		return res.status(StatusCodes.NOT_FOUND).json({
 			success: false,
-			message: "User does not exist",
-			error: "User with this email doesn't exist",
+			message: user.message || "User does not exist",
+			error: user.err || "User with this email doesn't exist",
 		});
 	}
 
@@ -88,13 +88,15 @@ const loginUser = async (req, res) => {
 		});
 	}
 
-	//Error dey o!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	let token = generateToken(email);
-	// console.log(req.headers.authorization)
+	let token =
+		user[3] == "admin"
+			? generateToken(email, "admin")
+			: generateToken(email);
+
 	res.status(StatusCodes.OK).json({
 		success: true,
 		message: `Login successful. Welcome ${email}`,
-		data: { token },
+		data: token,
 	});
 };
 

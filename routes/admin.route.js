@@ -6,15 +6,13 @@ const {
 	updateTask,
 	createTask,
 } = require("../controllers/task.controller");
-const {registerAdmin, deleteUser, loginAdmin} = require("../controllers/admin.controller");
+const {deleteUser} = require("../controllers/admin.controller");
 const authenticateUser = require("../middleware/auth.middleware");
 
-router.route("/register").post(registerAdmin);
+//Routes
 router.route("/delete/:id").delete(authenticateUser, deleteUser);
-router.route("/tasks").get(viewTask).post(createTask);
-router.route("/tasks/:id").delete(deleteTask).patch(updateTask);
-//temp
-router.route("/login").post(loginAdmin);
+router.route("/tasks").get(authenticateUser, viewTask).post(authenticateUser, createTask);
+router.route("/tasks/:id").delete(authenticateUser, deleteTask).patch(authenticateUser, updateTask);
 
 module.exports = router;
 

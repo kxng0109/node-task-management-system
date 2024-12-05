@@ -1,19 +1,30 @@
 const express = require("express");
-const path = require("path");
 const app = express();
 const dotenv = require("dotenv");
+const helmet = require("helmet");
+const {rateLimit} = require("express-rate-limit")
 dotenv.config();
 
-//Routes
 const taskRoute = require("./routes/task.route");
 const userRoute = require("./routes/user.route");
 const adminRoute = require("./routes/admin.route");
 
-//Middlewares
-const authenticateUser = require("./middleware/auth.middleware");
+//Security
+app.use(helmet());
+const limiter = rateLimit({
+	windowMs: 10 * 60 * 1000,
+	limit: 30,
+	standardHeaders: 'draft-7',
+	legacyHeaders: false,
+	message: "Too many requests, please try again after a while."
+});
+app.use(limiter);
+
 
 app.use(express.json());
-// app.use(express.static(path.join(__dirname, "public")));
+app.use(express.urlencoded({extended: true}))
+
+//Routes
 app.use("/api", userRoute);
 app.use("/api/tasks", taskRoute);
 app.use("/api/admin", adminRoute);

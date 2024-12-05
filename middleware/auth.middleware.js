@@ -1,5 +1,6 @@
 const { StatusCodes } = require("http-status-codes");
 const { decodeToken } = require("../hashToken");
+const validator = require("validator");
 
 const authenticateUser = (req, res, next) => {
 	const authHeader = req.headers.authorization;
@@ -14,6 +15,10 @@ const authenticateUser = (req, res, next) => {
 	const token = authHeader.split(" ")[1];
 
 	try {
+		if (!validator.isJWT(token)){
+			console.log('yeah')
+			throw new Error("Invalid jwt token")
+		}
 		const { email, userType } = decodeToken(token);
 		req.user = {email, userType};
 		next();

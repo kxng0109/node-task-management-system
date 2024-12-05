@@ -16,7 +16,7 @@ const registerAdmin = async (req, res) => {
 		});
 	}
 	let checkUser = await getUserDB(email);
-	if (checkUser) {
+	if (checkUser.length || !checkUser.err) {
 		return res.status(StatusCodes.BAD_REQUEST).json({
 			success: false,
 			message: "User exists",
@@ -41,29 +41,35 @@ const registerAdmin = async (req, res) => {
 
 const loginAdmin = async (req, res) => {
 	const { email, password } = req.body;
-	if (!email || !password)
-		return res
-			.status(StatusCodes.BAD_REQUEST)
-			.json({ msg: "Email and password required" });
+	if (!email || !password) {
+		return res.status(StatusCodes.BAD_REQUEST).json({
+			success: false,
+			message: "Email and password required",
+			error: "Email and password fields can not be empty",
+		});
+	}
 
 	let user = await getUserDB(email);
-	if (!user) {
-		return res
-			.status(StatusCodes.INTERNAL_SERVER_ERROR)
-			.json({ msg: "User with this email doesn't exist" });
+	if (!user || user.err) {
+		return res.status(StatusCodes.NOT_FOUND).json({
+			success: false,
+			message: user.message || "Admin does not exist",
+			error: user.err || "Admin with this email doesn't exist",
+		});
 	}
 
 	//We can't be comapring passwords like this abegggggggg
 	let isCorrect = comparePassword(password, user[2]);
 	if (!isCorrect) {
-		return res
-			.status(StatusCodes.BAD_REQUEST)
-			.json({ msg: "Password is incorrect" });
+		return res.status(StatusCodes.BAD_REQUEST).json({
+			success: false,
+			message: "Invalid credentials",
+			error: "Password or email is incorrect",
+		});
 	}
 
-	//Error dey o!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	let token = generateToken({email, userType: "admin"});
-	// console.log(req.headers.authorization)
+	let token = generateToken(email, "admin");
+	
 	res.status(StatusCodes.OK).json({
 		success: true,
 		message: `Login successful. Welcome ${email}`,
@@ -94,9 +100,9 @@ const deleteUser = async (req, res) => {
 	const removeUser = await deleteUserDB(userType, IDToBeRemoved);
 	if (removeUser.err) {
 		let statusCodeType;
-		if (task.message == "Invalid user") {
+		if (removeUser.message == "Invalid user") {
 			statusCodeType = StatusCodes.NOT_FOUND;
-		} else if (task.message == "Permission denied") {
+		} else if (removeUser.message == "Permission denied") {
 			statusCodeType = StatusCodes.FORBIDDEN;
 		} else {
 			statusCodeType = StatusCodes.INTERNAL_SERVER_ERROR;
@@ -104,8 +110,8 @@ const deleteUser = async (req, res) => {
 
 		return res.status(statusCodeType).json({
 			success: false,
-			message: task.message || task.err.message || "An error has occured",
-			error: task.err,
+			message: removeUser.message || removeUser.err.message || "An error has occured",
+			error: removeUser.err,
 		});
 	}
 	res.status(StatusCodes.NO_CONTENT).json({});

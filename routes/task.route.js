@@ -9,7 +9,12 @@ const {
 const authenticateUser = require("../middleware/auth.middleware");
 const getUserIDMiddleware = require("../middleware/userid.middleware");
 
-router.route("/").get(authenticateUser, getUserIDMiddleware, viewTask).post(authenticateUser, getUserIDMiddleware, createTask);
-router.route("/:id").patch(authenticateUser, getUserIDMiddleware, updateTask).delete(authenticateUser, getUserIDMiddleware, deleteTask);
+//Middleware
+router.use(authenticateUser);
+router.use(getUserIDMiddleware);
+
+//Routes
+router.route("/").get(viewTask).post(createTask);
+router.route("/:id").patch(updateTask).delete(deleteTask);
 
 module.exports = router;

@@ -50,16 +50,21 @@ const deleteUserDB = async (role, IDToBeRemoved) => {
 	if (role != "admin"){
 		return { message: "Permission denied", err: "You do not have the permission to perform this task" };
 	};
-	const checkUser = await getUserDB(IDToBeRemoved);
-	if (checkUser.err) return { err: checkUser.err };
+	try{
+		console.log(IDToBeRemoved)
+		const checkUser = await getUserDB(IDToBeRemoved, "id");
+		if (checkUser.err) return checkUser;
 
-	const [row, result] = await pool.execute(
-		`DELETE FROM users
-		WHERE id = ?
-		`,
-		[IDToBeRemoved],
-	);
-	return { row, result };
+		await pool.execute(
+			`DELETE FROM users
+			WHERE id = ?
+			`,
+			[IDToBeRemoved],
+		);
+		return "User deleted";	
+	}catch(err){
+		return {err}
+	}
 };
 
 module.exports = {
