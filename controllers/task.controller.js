@@ -40,7 +40,6 @@ const createTask = async (req, res) => {
 
 const viewTask = async (req, res) => {
 	const task = await viewTasksDB();
-	console.log(req.headers)
 	res.status(StatusCodes.OK).json({ msg: task });
 };
 

@@ -2,7 +2,8 @@ const express = require("express");
 const app = express();
 const dotenv = require("dotenv");
 const helmet = require("helmet");
-const {rateLimit} = require("express-rate-limit")
+const {rateLimit} = require("express-rate-limit");
+const initializeDatabase = require("./db/dbSetup");
 dotenv.config();
 
 const taskRoute = require("./routes/task.route");
@@ -32,6 +33,17 @@ app.use("/api/admin", adminRoute);
 
 const port = process.env.PORT || 3000;
 
-app.listen(port, () =>{
-	console.log(`Server running on port ${port}`)
-})
+const startServer = async() =>{
+	try{
+		await initializeDatabase();
+
+		app.listen(port, () =>{
+			console.log(`Server running on port ${port}`)
+		});
+	} catch(err){
+		console.error(`Failed to start server: ${err.message}`);
+		process.exit(1);
+	}
+}
+
+startServer();

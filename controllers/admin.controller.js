@@ -32,7 +32,14 @@ const registerAdmin = async (req, res) => {
 		});
 	}
 
-	await registerAdminDB(email, hashPassword(password));
+	const result = await registerAdminDB(email, hashPassword(password));
+	if(!result || result.err){
+		return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+			success: false,
+			message: result.err.sqlMessage || "An error has occured",
+			error: "An error has occured",
+		});
+	}
 	res.status(StatusCodes.CREATED).json({
 		success: true,
 		message: "Admin account created",
@@ -58,7 +65,6 @@ const loginAdmin = async (req, res) => {
 		});
 	}
 
-	//We can't be comapring passwords like this abegggggggg
 	let isCorrect = comparePassword(password, user[2]);
 	if (!isCorrect) {
 		return res.status(StatusCodes.BAD_REQUEST).json({
@@ -79,7 +85,6 @@ const loginAdmin = async (req, res) => {
 
 const deleteUser = async (req, res) => {
 	const { userType } = req.user;
-	console.log(userType)
 	const { id: IDToBeRemoved } = req.params;
 	if (!userType || userType != "admin") {
 		return res.status(StatusCodes.FORBIDDEN).json({

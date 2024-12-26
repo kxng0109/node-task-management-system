@@ -51,7 +51,6 @@ const deleteUserDB = async (role, IDToBeRemoved) => {
 		return { message: "Permission denied", err: "You do not have the permission to perform this task" };
 	};
 	try{
-		console.log(IDToBeRemoved)
 		const checkUser = await getUserDB(IDToBeRemoved, "id");
 		if (checkUser.err) return checkUser;
 
