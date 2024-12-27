@@ -1,14 +1,15 @@
 const axios = require("axios");
+const server = "http://localhost:3000"
 
 const loginUser = async () => {
     try {
         // Login request
-        const response = await axios.post("http://localhost:3000/api/login", {
-            email: "lol@gmail.com",
-            password: "Lolllll",
+        const response = await axios.post(`${server}/api/login`, {
+            email: "email_address",
+            password: "password",
         });
-        console.log("Login successful:", response.data.data.token);
-        return response.data.data.token; // Return the token to use in the next step
+        console.log("Login successful:", response.data.data);
+        return response.data.data; // Return the token to use
     } catch (error) {
         console.error("Error during login:", error.response ? error.response.data : error.message);
         throw error; // If login fails, throw an error
@@ -23,10 +24,9 @@ const fetchUserData = async (authToken) => {
         }
 
         // Fetch user data using the auth token
-        const response = await axios.get("http://localhost:3000/api/tasks", {
+        const response = await axios.get(`${server}/api/tasks`, {
             headers: { Authorization: `Bearer ${authToken}` },
         });
-        // console.log("User data:", response.data);
     } catch (error) {
         console.error("Error fetching user data:", error.response ? error.response.data : error.message);
     }
