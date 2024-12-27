@@ -34,7 +34,8 @@ const registerUser = async (req, res) => {
 	}
 
 	let checkUser = await getUserDB(email);
-	if (checkUser) {
+		console.log(checkUser)
+	if (checkUser && !checkUser.err) {
 		return res.status(StatusCodes.CONFLICT).json({
 			success: false,
 			message: "User exists",
@@ -50,7 +51,14 @@ const registerUser = async (req, res) => {
 		});
 	}
 
-	await registerUserDB(email, hashPassword(password));
+	const result = await registerUserDB(email, hashPassword(password));
+	if(!result || result.err){
+		return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+			success: false,
+			message: result.err.sqlMessage || "An error has occured",
+			error: "An error has occured",
+		});
+	}
 	let token = generateToken(email);
 	res.status(StatusCodes.CREATED).json({
 		success: true,

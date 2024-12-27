@@ -15,9 +15,26 @@ const registerAdmin = async (req, res) => {
 			error: "No email or password was entered",
 		});
 	}
+
+	const validateEmail = (email) => {
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		let hasPassedTest = emailRegex.test(email);
+		if (hasPassedTest) return validator.isEmail(email);
+		return hasPassedTest;
+	};
+
+	let hasPassedEmailValidation = validateEmail(email);
+	if (!hasPassedEmailValidation) {
+		return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+			success: false,
+			message: "Invalid email address",
+			error: "Invalid email format, ensure the email contains '@' and a valid domain name.",
+		});
+	}
+
 	let checkUser = await getUserDB(email);
 	if (checkUser.length || !checkUser.err) {
-		return res.status(StatusCodes.BAD_REQUEST).json({
+		return res.status(StatusCodes.CONFLICT).json({
 			success: false,
 			message: "User exists",
 			error: "A user with this email address exists",
@@ -33,16 +50,18 @@ const registerAdmin = async (req, res) => {
 	}
 
 	const result = await registerAdminDB(email, hashPassword(password));
-	if(!result || result.err){
+	if (!result || result.err) {
 		return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
 			success: false,
 			message: result.err.sqlMessage || "An error has occured",
 			error: "An error has occured",
 		});
 	}
+	let token = generateToken(email);
 	res.status(StatusCodes.CREATED).json({
 		success: true,
 		message: "Admin account created",
+		data: { token },
 	});
 };
 
@@ -75,7 +94,7 @@ const loginAdmin = async (req, res) => {
 	}
 
 	let token = generateToken(email, "admin");
-	
+
 	res.status(StatusCodes.OK).json({
 		success: true,
 		message: `Login successful. Welcome ${email}`,
@@ -115,7 +134,10 @@ const deleteUser = async (req, res) => {
 
 		return res.status(statusCodeType).json({
 			success: false,
-			message: removeUser.message || removeUser.err.message || "An error has occured",
+			message:
+				removeUser.message ||
+				removeUser.err.message ||
+				"An error has occured",
 			error: removeUser.err,
 		});
 	}

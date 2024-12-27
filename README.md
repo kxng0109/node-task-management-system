@@ -2,6 +2,16 @@
 
 A web application built with **Node.js** that allows users to manage their tasks. Users can create, edit, delete, and mark their tasks as completed. Admins have additional permissions to manage tasks for any user.
 
+## Table of Content
+- <a href="#features">Features</a>
+- <a href="#technologies-used">Technologies Used</a>
+- <a href="#setup">Setup</a>
+- <a href="#prerequisites">Prerequisites</a>
+- <a href="#installation">Installation</a>
+- <a href="#api-endpoints">API Endpoints</a>
+- <a href="#license">License</a>
+
+
 ## Features
 
 - **User**:
@@ -32,7 +42,7 @@ To get this project running locally, follow these steps:
 - Node.js (v14.x or above)
 - MySQL
 
-### Installation Steps
+### Installation
 
 1. **Clone the repository**:
    ```bash
@@ -65,6 +75,44 @@ To get this project running locally, follow these steps:
 	npm start
 	```
 The app will run on http://localhost:3000 by default, unless the "PORT" value is changed.
+
+## API Endpoints
+### User Routes
+Base URL: ```/api```
+```markdown
+| Method   | Endpoint          | Description                          |
+|----------|-------------------|--------------------------------------|
+| POST     | `/register`       | Register a new user.                |
+| POST     | `/login`          | User login.                         |
+| POST     | `/admin/register` | Register a new admin.               |
+| POST     | `/admin/login`    | Admin login.                        |
+```
+Note: email and password are required for login and registration
+
+### Admin Routes
+Base URL: ```/api/admin```
+```markdown
+| Method   | Endpoint            | Description                               |
+|----------|---------------------|-------------------------------------------|
+| DELETE   | `/delete/:id`       | Delete a user by their ID.               |
+| GET      | `/tasks`            | Get all tasks.                           |
+| POST     | `/tasks`            | Create a new task.                       |
+| DELETE   | `/tasks/:id`        | Delete a task by its ID.                 |
+| PATCH    | `/tasks/:id`        | Update a task by its ID.                 |
+```
+
+### Task Routes (for Users)
+Base URL: ```/api/tasks```
+```markdown
+| Method   | Endpoint     | Description                               |
+|----------|--------------|-------------------------------------------|
+| GET      | `/`          | Get all tasks for the authenticated user.|
+| POST     | `/`          | Create a new task for the authenticated user.|
+| PATCH    | `/:id`       | Update a task by its ID for the authenticated user.|
+| DELETE   | `/:id`       | Delete a task by its ID for the authenticated user.|
+```
+Note: To create a task, user_id, title, description and deadline are required in that order.
+Note: To update a task, "completed" is required.
 
 ## License
 

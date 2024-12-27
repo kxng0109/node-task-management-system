@@ -9,10 +9,12 @@ const {
 const {deleteUser} = require("../controllers/admin.controller");
 const authenticateUser = require("../middleware/auth.middleware");
 
+router.use(authenticateUser);
+
 //Routes
-router.route("/delete/:id").delete(authenticateUser, deleteUser);
-router.route("/tasks").get(authenticateUser, viewTask).post(authenticateUser, createTask);
-router.route("/tasks/:id").delete(authenticateUser, deleteTask).patch(authenticateUser, updateTask);
+router.route("/delete/:id").delete(deleteUser);
+router.route("/tasks").get(viewTask).post(createTask);
+router.route("/tasks/:id").delete(deleteTask).patch(updateTask);
 
 module.exports = router;
 
