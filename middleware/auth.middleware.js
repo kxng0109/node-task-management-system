@@ -16,7 +16,6 @@ const authenticateUser = (req, res, next) => {
 
 	try {
 		if (!validator.isJWT(token)){
-			console.log('yeah')
 			throw new Error("Invalid jwt token")
 		}
 		const { email, userType } = decodeToken(token);
@@ -25,7 +24,7 @@ const authenticateUser = (req, res, next) => {
 	} catch (err) {
 		return res.status(StatusCodes.FORBIDDEN).json({
 			success: false,
-			message: "Invalid token",
+			message: err.message || "Invalid token",
 			error: "Token is invalid, please login again",
 		});
 	}
