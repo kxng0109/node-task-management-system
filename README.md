@@ -47,7 +47,7 @@ To get this project running locally, follow these steps:
 1. **Clone the repository**:
    ```bash
    git clone https://github.com/kxng0109/node-task-management-system.git
-   cd node-task-management-app
+   cd node-task-management-system
    ```
 2. **Install dependencies**:
 	```bash
